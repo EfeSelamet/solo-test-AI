@@ -145,37 +145,40 @@ def generate_child_boards(current_board):
     
     return children
 
-def BFS():
-    first_copy = treenodes([row[:] for row in board], None)
-    add_to_frontier(first_copy)
-    chechked_boards.append(serialize(first_copy.board))
+def IDDFS():
+    depth = 0
     while True:
-        if not frontier:
-            print("No solution found.")
-            break
-        print("\nCurrent board:")
-        node = frontier.pop(0)
-        explored.append(node)
-        chechked_boards.append(serialize(node.board))
-        print_status(node.board)
-        
-        '''
-        if peg_count(node.board) == 1:
-            print("\n★ You win! Only one peg remains. ★")
-            break
-        '''
-        if not  legal_moves:
-            print("\n★ You win! Max peg remains. ★")
-            break
-        
-        
-        list_moves(node.board)
-        #children = [child for child, move in generate_child_boards(node)]
-        children = generate_child_boards(node)
-        for child in children:
-            serialized_child = serialize(child.board)
-            if serialized_child not in explored:
-                add_to_frontier(child)
+        print(f"\nSearching with depth limit: {depth}")
+        first_copy = treenodes([row[:] for row in board], None)
+        explored.clear()
+        if DLS(first_copy, depth):
+            return
+        depth += 1
+
+def DLS(node, depth):
+    print_status(node.board)
+    list_moves(node.board)
+    
+    if peg_count(node.board) == 1:
+        print("\n★ You win! Only one peg remains. ★")
+        return True
+    '''
+    if not legal_moves(node.board):
+        print("\n★ You win! Max peg remains. ★")
+        return True
+    '''
+    if depth <= 0:
+        return False
+    
+    list_moves(node.board)
+    children = generate_child_boards(node)
+    for child in children:
+        serialized_child = serialize(child.board)
+        if serialized_child not in explored:
+            explored.append(serialized_child)
+            if DLS(child, depth - 1):
+                return True
+    return False
 
 #---------------------------------------------------------
 def add_to_frontier(state):
@@ -186,7 +189,7 @@ def add_to_frontier(state):
 
 if __name__ == "__main__":
     try:
-        BFS()
+        IDDFS()
     except (KeyboardInterrupt, EOFError):
         print("\nInterrupted.")
         sys.exit(0)

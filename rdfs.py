@@ -10,6 +10,7 @@ Internal board:
 from typing import List, Tuple, Dict
 import sys
 from copy import deepcopy
+import random
 
 # Board pattern (holes)
 TEMPLATE = [
@@ -117,6 +118,8 @@ frontier = []
 chechked_boards = []
 explored = []
 
+    
+
 def generate_child_boards(current_board):
     """
     Given a board state, generate all possible child boards
@@ -126,6 +129,8 @@ def generate_child_boards(current_board):
     """
     children = []
     possible_moves = legal_moves(current_board.board)
+    
+    random.shuffle(possible_moves)
     
     for from_idx, to_idx in possible_moves:
         # Copy the board so we don't modify the original
@@ -145,7 +150,18 @@ def generate_child_boards(current_board):
     
     return children
 
-def BFS():
+def print_path(node):
+    path = []
+    while node:
+        path.append(node)
+        node = node.parent
+    for step in reversed(path):
+        print_status(step.board)
+        if step.move:
+            print(f"Move: {step.move[0]} -> {step.move[1]}")
+        print()
+
+def RDFS():
     first_copy = treenodes([row[:] for row in board], None)
     add_to_frontier(first_copy)
     chechked_boards.append(serialize(first_copy.board))
@@ -154,20 +170,21 @@ def BFS():
             print("No solution found.")
             break
         print("\nCurrent board:")
-        node = frontier.pop(0)
+        node = frontier.pop()
         explored.append(node)
         chechked_boards.append(serialize(node.board))
         print_status(node.board)
         
-        '''
+        
         if peg_count(node.board) == 1:
             print("\n★ You win! Only one peg remains. ★")
+            print_path(node)
             break
         '''
-        if not  legal_moves:
+        if not legal_moves(node.board):
             print("\n★ You win! Max peg remains. ★")
             break
-        
+        '''
         
         list_moves(node.board)
         #children = [child for child, move in generate_child_boards(node)]
@@ -186,7 +203,7 @@ def add_to_frontier(state):
 
 if __name__ == "__main__":
     try:
-        BFS()
+        RDFS()
     except (KeyboardInterrupt, EOFError):
         print("\nInterrupted.")
         sys.exit(0)
