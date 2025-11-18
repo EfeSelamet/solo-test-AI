@@ -10,6 +10,12 @@ Internal board:
 from typing import List, Tuple, Dict
 import sys
 from copy import deepcopy
+import bisect
+import winsound
+
+
+
+
 
 # Board pattern (holes)
 TEMPLATE = [
@@ -23,10 +29,12 @@ TEMPLATE = [
 ]
 
 class treenodes:
-    def __init__(self, board, parent=None, move=None):
+    def __init__(self, board, parent=None, move=None, cost=0):
         self.board = board
         self.parent = parent
         self.move = move
+        self.cost = cost
+
 ROWS, COLS = 7, 7
 
 # Build the 7x7 state array
@@ -113,7 +121,8 @@ def serialize(board_state):
     """Convert a 7x7 board into a hashable tuple for visited-state checking."""
     return tuple(tuple(cell for cell in row) for row in board_state)
 
-frontier = []
+priority_queue = []
+pq_costs = []
 chechked_boards = []
 explored = []
 
@@ -141,20 +150,35 @@ def generate_child_boards(current_board):
         new_board[mid_r][mid_c] = 0
         new_board[r2][c2] = 1
         
-        children.append(treenodes(new_board, current_board,(from_idx, to_idx)))
+        child_cost = current_board.cost + 1  # Example cost function: increment by 1 per move
+        
+        children.append(treenodes(new_board, current_board,(from_idx, to_idx), child_cost))
     
     return children
 
-def BFS():
-    first_copy = treenodes([row[:] for row in board], None)
-    add_to_frontier(first_copy)
+def print_path(node):
+    path = []
+    while node:
+        path.append(node)
+        node = node.parent
+    for step in reversed(path):
+        print_status(step.board)
+        if step.move:
+            print(f"Move: {step.move[0]} -> {step.move[1]}")
+        print()
+
+def UCS():
+    first_copy = treenodes([row[:] for row in board], None,0)
+    priority_queue.append(first_copy)
+    pq_costs.append(first_copy.cost)
     chechked_boards.append(serialize(first_copy.board))
     while True:
-        if not frontier:
+        if not priority_queue:
             print("No solution found.")
             break
         print("\nCurrent board:")
-        node = frontier.pop(0)
+        node = priority_queue.pop(0)
+        pq_costs.pop(0)
         explored.append(node)
         chechked_boards.append(serialize(node.board))
         print_status(node.board)
@@ -162,34 +186,47 @@ def BFS():
         '''
         if peg_count(node.board) == 1:
             print("\n★ You win! Only one peg remains. ★")
+            print_path(node)
             break
         '''
-        if len(legal_moves(node.board)) == 0:
+        if not  legal_moves(node.board):
             print("\n★ You win! Max peg remains. ★")
+            print_path(node)
             break
         
+        if peg_count(node.board) == 25:
+            duration = 1000  # milliseconds
+            freq = 440  # Hz
+            winsound.Beep(freq, duration)
         
         list_moves(node.board)
         #children = [child for child, move in generate_child_boards(node)]
         children = generate_child_boards(node)
         for child in children:
             serialized_child = serialize(child.board)
-            if serialized_child not in explored and serialized_child not in frontier:
-                add_to_frontier(child)
+            if serialized_child not in explored:
+                add_to_priority_queue(child)
+
 
 #---------------------------------------------------------
-def add_to_frontier(state):
-    if state not in chechked_boards:
-        frontier.append(state)
+def add_to_priority_queue(state):
+    serialized_board = serialize(state.board)
+    if serialized_board not in chechked_boards:
+        index = bisect.bisect_left(pq_costs, state.cost)
+        priority_queue.insert(index, (state))
+        pq_costs.insert(index, state.cost)
+
 
 #---------------------------------------------------------
 
 if __name__ == "__main__":
     try:
-        BFS()
+        UCS()
     except (KeyboardInterrupt, EOFError):
         print("\nInterrupted.")
         sys.exit(0)
+        
+
 
 
 
