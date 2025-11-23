@@ -1,15 +1,7 @@
-"""
-Solo (Peg Solitaire) CLI game on the 7x7 English board shape.
-
-Internal board:
-  -1 = invalid / corner
-   0 = empty hole
-   1 = peg
-"""
-
 from typing import List, Tuple, Dict
 import sys
 from copy import deepcopy
+import time
 
 # Board pattern (holes)
 TEMPLATE = [
@@ -29,7 +21,8 @@ class treenodes:
         self.move = move
 ROWS, COLS = 7, 7
 
-# Build the 7x7 state array
+# Build the 7x7 state array from the template
+# place 1 to represent peg, 0 to represent empty hole, -1 to represent invalid position
 board: List[List[int]] = [[-1]*COLS for _ in range(ROWS)]
 index_to_pos: Dict[int, Tuple[int, int]] = {}
 pos_to_index: Dict[Tuple[int, int], int] = {}
@@ -49,7 +42,7 @@ NUM_HOLES = idx - 1
 DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
 # ---------------------------------------------------------
-
+#for printing the board
 def render(current_board) -> str:
     """Return a multi-line string showing the current board."""
     lines = []
@@ -65,7 +58,8 @@ def render(current_board) -> str:
     return "\n".join(lines)
 
 # ---------------------------------------------------------
-
+#claculates the possblle legal moves so the algorithm can choose from them
+#cycles through all positions and checks the one with pegs in them
 def legal_moves(current_board) -> List[Tuple[int, int]]:
     """Return list of legal moves as (from_idx, to_idx)."""
     moves = []
@@ -85,7 +79,7 @@ def legal_moves(current_board) -> List[Tuple[int, int]]:
 
 # ---------------------------------------------------------
 
-
+# counts the number of pegs remaining on the board
 def peg_count(current_board) -> int:
     return sum(cell == 1 for row in current_board for cell in row)
 
@@ -96,6 +90,8 @@ def print_status(current_board):
     lm = legal_moves(current_board)
     print(f"Legal moves: {len(lm)}")
 
+#prints the legal moves
+#it's not used in algorithm just visualization
 def list_moves(current_board):
     lm = legal_moves(current_board)
     if not lm:
@@ -109,21 +105,16 @@ def list_moves(current_board):
         print(f"{f} -> {tos}")
 
 # ---------------------------------------------------------
+#converts the board to a tuple of tuples for easier comparison and storage in lists
 def serialize(board_state):
-    """Convert a 7x7 board into a hashable tuple for visited-state checking."""
     return tuple(tuple(cell for cell in row) for row in board_state)
 
 frontier = []
 chechked_boards = []
 explored = []
 
+#copies the board and applies all possible legal moves to generate child boards
 def generate_child_boards(current_board):
-    """
-    Given a board state, generate all possible child boards
-    by applying every legal move once.
-    Returns a list of (new_board, move) pairs,
-    where move = (from_idx, to_idx).
-    """
     children = []
     possible_moves = legal_moves(current_board.board)
     
@@ -145,11 +136,37 @@ def generate_child_boards(current_board):
     
     return children
 
-def BFS():
+#to print the path from initial state to goal state after solution is found
+def print_path(node):
+    path = []
+    while node:
+        path.append(node)
+        node = node.parent
+    for step in reversed(path):
+        print_status(step.board)
+        if step.move:
+            print(f"Move: {step.move[0]} -> {step.move[1]}")
+        print()
+
+def BFS(limit_time):
+    #to check time limit
+    start = time.monotonic()
+    
     first_copy = treenodes([row[:] for row in board], None)
     add_to_frontier(first_copy)
     chechked_boards.append(serialize(first_copy.board))
+    
+    #remove node from frontier wth the order of FIFO
+    #continue until solution is found or time limit exceeded
+    #if the current board has only one peg it's a win
+    #else generate child boards and add to frontier if not already explored
     while True:
+        
+        elapsed = time.monotonic() - start
+        if elapsed > limit_time:
+            print("Time limit exceeded. No solution found.")
+            break
+        
         if not frontier:
             print("No solution found.")
             break
@@ -159,7 +176,7 @@ def BFS():
         chechked_boards.append(serialize(node.board))
         print_status(node.board)
         
-        '''
+        
         if peg_count(node.board) == 1:
             print("\n★ You win! Only one peg remains. ★")
             break
@@ -167,10 +184,9 @@ def BFS():
         if len(legal_moves(node.board)) == 0:
             print("\n★ You win! Max peg remains. ★")
             break
-        
+        '''
         
         list_moves(node.board)
-        #children = [child for child, move in generate_child_boards(node)]
         children = generate_child_boards(node)
         for child in children:
             serialized_child = serialize(child.board)
@@ -178,6 +194,7 @@ def BFS():
                 add_to_frontier(child)
 
 #---------------------------------------------------------
+#to make sure no duplicate boards are added to frontier
 def add_to_frontier(state):
     if state not in chechked_boards:
         frontier.append(state)

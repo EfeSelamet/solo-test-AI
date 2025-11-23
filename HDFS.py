@@ -10,6 +10,7 @@ Internal board:
 from typing import List, Tuple, Dict
 import sys
 from copy import deepcopy
+import time
 
 # Board pattern (holes)
 TEMPLATE = [
@@ -29,7 +30,8 @@ class treenodes:
         self.move = move
 ROWS, COLS = 7, 7
 
-# Build the 7x7 state array
+# Build the 7x7 state array from the template
+# place 1 to represent peg, 0 to represent empty hole, -1 to represent invalid position
 board: List[List[int]] = [[-1]*COLS for _ in range(ROWS)]
 index_to_pos: Dict[int, Tuple[int, int]] = {}
 pos_to_index: Dict[Tuple[int, int], int] = {}
@@ -49,7 +51,7 @@ NUM_HOLES = idx - 1
 DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
 # ---------------------------------------------------------
-
+#for printing the board
 def render(current_board) -> str:
     """Return a multi-line string showing the current board."""
     lines = []
@@ -65,7 +67,8 @@ def render(current_board) -> str:
     return "\n".join(lines)
 
 # ---------------------------------------------------------
-
+#claculates the possblle legal moves so the algorithm can choose from them
+#cycles through all positions and checks the one with pegs in them
 def legal_moves(current_board) -> List[Tuple[int, int]]:
     """Return list of legal moves as (from_idx, to_idx)."""
     moves = []
@@ -85,7 +88,7 @@ def legal_moves(current_board) -> List[Tuple[int, int]]:
 
 # ---------------------------------------------------------
 
-
+# counts the number of pegs remaining on the board
 def peg_count(current_board) -> int:
     return sum(cell == 1 for row in current_board for cell in row)
 
@@ -96,6 +99,8 @@ def print_status(current_board):
     lm = legal_moves(current_board)
     print(f"Legal moves: {len(lm)}")
 
+#prints the legal moves
+#it's not used in algorithm just visualization
 def list_moves(current_board):
     lm = legal_moves(current_board)
     if not lm:
@@ -109,21 +114,16 @@ def list_moves(current_board):
         print(f"{f} -> {tos}")
 
 # ---------------------------------------------------------
+#converts the board to a tuple of tuples for easier comparison and storage in lists
 def serialize(board_state):
-    """Convert a 7x7 board into a hashable tuple for visited-state checking."""
     return tuple(tuple(cell for cell in row) for row in board_state)
 
 frontier = []
 chechked_boards = []
 explored = []
 
+#copies the board and applies all possible legal moves to generate child boards
 def generate_child_boards(current_board):
-    """
-    Given a board state, generate all possible child boards
-    by applying every legal move once.
-    Returns a list of (new_board, move) pairs,
-    where move = (from_idx, to_idx).
-    """
     children = []
     possible_moves = legal_moves(current_board.board)
     
@@ -145,6 +145,7 @@ def generate_child_boards(current_board):
     
     return children
 
+#to print the path from initial state to goal state after solution is found
 def print_path(node):
     path = []
     while node:
@@ -157,11 +158,26 @@ def print_path(node):
         print()
 
 
-def DFS():
+def HDFS(limit_time):
+    start = time.monotonic()
+    
     first_copy = treenodes([row[:] for row in board], None)
     add_to_frontier(first_copy)
     chechked_boards.append(serialize(first_copy.board))
+    
+    #remove node from frontier wth the order of LIFO
+    #stack instead of queue
+    #childeren are added to stack based on heuristic order
+    #continue until solution is found or time limit exceeded
+    #if the current board has only one peg it's a win
+    #else generate child boards and add to frontier if not already explored
     while True:
+        
+        elapsed = time.monotonic() - start
+        if elapsed > limit_time:
+            print("Time limit exceeded. No solution found.")
+            break
+        
         if not frontier:
             print("No solution found.")
             break
@@ -183,7 +199,6 @@ def DFS():
         '''
         
         list_moves(node.board)
-        #children = [child for child, move in generate_child_boards(node)]
         children = generate_child_boards(node)
         children = heuristic_order(children)
         
@@ -192,10 +207,15 @@ def DFS():
             if serialized_child not in explored:
                 add_to_frontier(child)
                 
+#---------------------------------------------------------
+#Heuristic orders children by 1 over number of legal moves available (ascending)
+#smaller number of legal moves means higher priority
+#we thought that have fewer moves can go deeper in the search tree
 def heuristic_order(children):
     return reversed(sorted(children, key=lambda x: 1/(len(legal_moves(x.board)) + 1)))
 
 #---------------------------------------------------------
+#to make sure no duplicate boards are added to frontier
 def add_to_frontier(state):
     if state not in chechked_boards:
         frontier.append(state)
@@ -204,7 +224,7 @@ def add_to_frontier(state):
 #Heuristic the cost of the child node is 1/(number of moves available)
 if __name__ == "__main__":
     try:
-        DFS()
+        HDFS()
     except (KeyboardInterrupt, EOFError):
         print("\nInterrupted.")
         sys.exit(0)
