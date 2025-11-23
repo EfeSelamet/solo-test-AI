@@ -153,6 +153,8 @@ def print_path(node):
 
 def DFS(limit_time):
     start = time.monotonic()
+    nodes = 0
+    max_frontier_size = 0
     
     first_copy = treenodes([row[:] for row in board], None)
     add_to_frontier(first_copy)
@@ -164,11 +166,15 @@ def DFS(limit_time):
     #if the current board has only one peg it's a win
     #else generate child boards and add to frontier if not already explored
     while True:
-        
+        nodes += 1
         elapsed = time.monotonic() - start
         if elapsed > limit_time:
             print("Time limit exceeded. No solution found.")
             break
+        
+        frontier_size = len(frontier)
+        if frontier_size > max_frontier_size:
+            max_frontier_size = frontier_size
         
         if not frontier:
             print("No solution found.")
@@ -183,6 +189,10 @@ def DFS(limit_time):
         if peg_count(node.board) == 1:
             print("\n★ You win! Only one peg remains. ★")
             print_path(node)
+            print("\n Game Variant A DFS")
+            print("Elapsed time: {:.2f} seconds".format(elapsed))
+            print("Total nodes explored:", nodes)
+            print("Frontier size at solution:", max_frontier_size)
             break
         '''
         if not legal_moves(node.board):

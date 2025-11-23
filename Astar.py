@@ -168,6 +168,8 @@ def print_path(node):
 def Astar(limit_time):
     #to check time limit
     start = time.monotonic()
+    nodes = 0
+    max_frontier_size = 0
     
     first_copy = treenodes([row[:] for row in board], None,0)
     priority_queue.append(first_copy)
@@ -178,12 +180,15 @@ def Astar(limit_time):
     #if the current board has no legal moves it's a win
     #else generate child boards and add to priority queue if not already explored
     while True:
-        
+        nodes += 1
         elapsed = time.monotonic() - start
         if elapsed > limit_time:
             print("Time limit exceeded. No solution found.")
             break
         
+        frontier_size = len(priority_queue)
+        if frontier_size > max_frontier_size:
+            max_frontier_size = frontier_size
         
         if not priority_queue:
             print("No solution found.")
@@ -202,8 +207,11 @@ def Astar(limit_time):
             break
         '''
         if not  legal_moves(node.board):
-            print("\n★ You win! Max peg remains. ★")
             print_path(node)
+            print("\n Game Variant B A*")
+            print("Elapsed time: {:.2f} seconds".format(elapsed))
+            print("Total nodes explored:", nodes)
+            print("Frontier size at solution:", max_frontier_size)
             break
         
         list_moves(node.board)

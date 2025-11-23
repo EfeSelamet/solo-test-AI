@@ -160,6 +160,8 @@ def print_path(node):
 
 def MAXUCS(limit_time):
     start = time.monotonic()
+    nodes = 0
+    max_frontier_size = 0
     
     first_copy = treenodes([row[:] for row in board], None,0)
     priority_queue.append(first_copy)
@@ -172,7 +174,10 @@ def MAXUCS(limit_time):
     #else generate child boards and add to priority queue if not already explored
     #it basically works like BFS but uses priority queue instead of normal queue but it doesn't change the outcome for max pegs
     while True:
-        
+        nodes+= 1
+        frontier_size = len(priority_queue)
+        if frontier_size > max_frontier_size:
+            max_frontier_size = frontier_size
         elapsed = time.monotonic() - start
         if elapsed > limit_time:
             print("Time limit exceeded. No solution found.")
@@ -197,6 +202,11 @@ def MAXUCS(limit_time):
         if not  legal_moves(node.board):
             print("\n★ You win! Max peg remains. ★")
             print_path(node)
+            print("\n Game Variant B maxUCS")
+            print("Elapsed time: {:.2f} seconds".format(elapsed))
+            print("Total nodes explored:", nodes)
+            print("Frontier size at solution:", max_frontier_size)
+            print("Max pegs remaining: {}".format(peg_count(node.board)))
             break
         
         if peg_count(node.board) == 25:

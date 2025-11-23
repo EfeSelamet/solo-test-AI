@@ -41,6 +41,8 @@ NUM_HOLES = idx - 1
 # Directions for orthogonal jumps: (dr, dc)
 DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
+start = time.monotonic()
+
 # ---------------------------------------------------------
 #for printing the board
 def render(current_board) -> str:
@@ -140,11 +142,12 @@ def generate_child_boards(current_board):
 #itratively inceasing depth limit until solution is found or time limit exceeded
 #rechecks explored boards for each depth limit
 def IDDFS(limit_time):
-    start = time.monotonic()
+    node = 0
+    max_frontier_size = 0
     
     depth = 0
     while True:
-        
+            
         elapsed = time.monotonic() - start
         if elapsed > limit_time:
             print("Time limit exceeded. No solution found.")
@@ -153,7 +156,7 @@ def IDDFS(limit_time):
         print(f"\nSearching with depth limit: {depth}")
         first_copy = treenodes([row[:] for row in board], None)
         explored.clear()
-        if DLS(first_copy, depth):
+        if DLS(first_copy, depth,node, max_frontier_size):
             return
         depth += 1
 
@@ -161,12 +164,23 @@ def IDDFS(limit_time):
 #if depth limit is reached return false to increase depth in IDDFS
 #if depth limit not reached generate child boards and continue search
 #child nodes have 1 less depth from parent node
-def DLS(node, depth):
+def DLS(node, depth,nodes,max_frontier_size):
     print_status(node.board)
     list_moves(node.board)
+
+    
+    nodes += 1
+    frontier_size = len(frontier)
+    if frontier_size > max_frontier_size:
+        max_frontier_size = frontier_size
+    elapsed = time.monotonic() - start
     
     if peg_count(node.board) == 1:
         print("\n★ You win! Only one peg remains. ★")
+        print("\n Game Variant A IDDFS")
+        print("Elapsed time: {:.2f} seconds".format(elapsed))
+        print("Total nodes explored:", nodes)
+        print("Frontier size at solution:", max_frontier_size)
         return True
     '''
     if not legal_moves(node.board):
