@@ -178,6 +178,7 @@ def DLS(node, depth,nodes,max_frontier_size,limit_time):
     elapsed = time.monotonic() - start
     if elapsed > limit_time:
         print("Time limit exceeded. No solution found.")
+        SystemExit(1)
     
     nodes += 1
     frontier_size = len(frontier)
