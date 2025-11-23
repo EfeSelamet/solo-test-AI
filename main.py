@@ -47,9 +47,9 @@ if __name__ == "__main__":
         print("3.A* Search (Astar)")
         Bchoice = int(input("Enter choice (1-3): ").strip())
         if Bchoice == 1:
-            maxrdfs.MaxRDFS(time_limit)
+            maxrdfs.MAXRDFS(time_limit)
         elif Bchoice == 2:
-            maxUCS.MaxUCS(time_limit)
+            maxUCS.MAXUCS(time_limit)
         elif Bchoice == 3:
             Astar.Astar(time_limit)
         else:
