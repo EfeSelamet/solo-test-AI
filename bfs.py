@@ -184,11 +184,13 @@ def BFS(limit_time):
         
         
         if peg_count(node.board) == 1:
-            print("\n★ You win! Only one peg remains. ★")
-            print("\n Game Variant B A*")
-            print("Elapsed time: {:.2f} seconds".format(elapsed))
-            print("Total nodes explored:", nodes)
-            print("Frontier size at solution:", max_frontier_size)
+            #need to check if the last peg is in the center position
+            if node.board[3][3] == 1:
+                print("\n★ You win! Only one peg remains. ★")
+                print("\n Game Variant B A*")
+                print("Elapsed time: {:.2f} seconds".format(elapsed))
+                print("Total nodes explored:", nodes)
+                print("Frontier size at solution:", max_frontier_size)
             break
         '''
         if len(legal_moves(node.board)) == 0:

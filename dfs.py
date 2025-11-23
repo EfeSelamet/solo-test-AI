@@ -187,13 +187,14 @@ def DFS(limit_time):
         
         
         if peg_count(node.board) == 1:
-            print("\n★ You win! Only one peg remains. ★")
-            print_path(node)
-            print("\n Game Variant A DFS")
-            print("Elapsed time: {:.2f} seconds".format(elapsed))
-            print("Total nodes explored:", nodes)
-            print("Frontier size at solution:", max_frontier_size)
-            break
+            if node.board[3][3] == 1:
+                print("\n★ You win! Only one peg remains. ★")
+                print_path(node)
+                print("\n Game Variant A DFS")
+                print("Elapsed time: {:.2f} seconds".format(elapsed))
+                print("Total nodes explored:", nodes)
+                print("Frontier size at solution:", max_frontier_size)
+                break
         '''
         if not legal_moves(node.board):
             print("\n★ You win! Max peg remains. ★")

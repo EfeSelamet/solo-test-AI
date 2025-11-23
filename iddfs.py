@@ -176,12 +176,13 @@ def DLS(node, depth,nodes,max_frontier_size):
     elapsed = time.monotonic() - start
     
     if peg_count(node.board) == 1:
-        print("\n★ You win! Only one peg remains. ★")
-        print("\n Game Variant A IDDFS")
-        print("Elapsed time: {:.2f} seconds".format(elapsed))
-        print("Total nodes explored:", nodes)
-        print("Frontier size at solution:", max_frontier_size)
-        return True
+        if node.board[3][3] == 1:
+            print("\n★ You win! Only one peg remains. ★")
+            print("\n Game Variant A IDDFS")
+            print("Elapsed time: {:.2f} seconds".format(elapsed))
+            print("Total nodes explored:", nodes)
+            print("Frontier size at solution:", max_frontier_size)
+            return True
     '''
     if not legal_moves(node.board):
         print("\n★ You win! Max peg remains. ★")
