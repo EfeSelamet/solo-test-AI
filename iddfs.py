@@ -160,6 +160,18 @@ def IDDFS(limit_time):
             return
         depth += 1
 
+def print_path(node):
+    path = []
+    while node:
+        path.append(node)
+        node = node.parent
+    for step in reversed(path):
+        print_status(step.board)
+        print()
+    for step in reversed(path):
+        if step.move:
+            print(f"Move: {step.move[0]} -> {step.move[1]}")
+
 #check if the current node is a solution or continue to depth limit
 #if depth limit is reached return false to increase depth in IDDFS
 #if depth limit not reached generate child boards and continue search
@@ -179,6 +191,7 @@ def DLS(node, depth,nodes,max_frontier_size):
         if node.board[3][3] == 1:
             print("\n★ You win! Only one peg remains. ★")
             print("\n Game Variant A IDDFS")
+            print_path(node)
             print("Elapsed time: {:.2f} seconds".format(elapsed))
             print("Total nodes explored:", nodes)
             print("Frontier size at solution:", max_frontier_size)

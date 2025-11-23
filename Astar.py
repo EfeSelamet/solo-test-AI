@@ -160,9 +160,10 @@ def print_path(node):
         node = node.parent
     for step in reversed(path):
         print_status(step.board)
+        print()
+    for step in reversed(path):
         if step.move:
             print(f"Move: {step.move[0]} -> {step.move[1]}")
-        print()
 
 
 def Astar(limit_time):
