@@ -147,16 +147,11 @@ def IDDFS(limit_time):
     
     depth = 0
     while True:
-            
-        elapsed = time.monotonic() - start
-        if elapsed > limit_time:
-            print("Time limit exceeded. No solution found.")
-            break
         
         print(f"\nSearching with depth limit: {depth}")
         first_copy = treenodes([row[:] for row in board], None)
         explored.clear()
-        if DLS(first_copy, depth,node, max_frontier_size):
+        if DLS(first_copy, depth,node, max_frontier_size,limit_time):
             return
         depth += 1
 
@@ -176,10 +171,13 @@ def print_path(node):
 #if depth limit is reached return false to increase depth in IDDFS
 #if depth limit not reached generate child boards and continue search
 #child nodes have 1 less depth from parent node
-def DLS(node, depth,nodes,max_frontier_size):
+def DLS(node, depth,nodes,max_frontier_size,limit_time):
     print_status(node.board)
     list_moves(node.board)
 
+    elapsed = time.monotonic() - start
+    if elapsed > limit_time:
+        print("Time limit exceeded. No solution found.")
     
     nodes += 1
     frontier_size = len(frontier)
@@ -210,7 +208,7 @@ def DLS(node, depth,nodes,max_frontier_size):
         serialized_child = serialize(child.board)
         if serialized_child not in explored:
             explored.append(serialized_child)
-            if DLS(child, depth - 1,nodes,max_frontier_size):
+            if DLS(child, depth - 1,nodes,max_frontier_size,limit_time):
                 return True
     return False
 
