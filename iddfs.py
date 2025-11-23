@@ -210,7 +210,7 @@ def DLS(node, depth,nodes,max_frontier_size):
         serialized_child = serialize(child.board)
         if serialized_child not in explored:
             explored.append(serialized_child)
-            if DLS(child, depth - 1):
+            if DLS(child, depth - 1,nodes,max_frontier_size):
                 return True
     return False
 

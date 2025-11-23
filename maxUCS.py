@@ -203,17 +203,12 @@ def MAXUCS(limit_time):
         if not  legal_moves(node.board):
             print("\n★ You win! Max peg remains. ★")
             print_path(node)
-            print("\n Game Variant B maxUCS")
+            print("\nGame Variant B maxUCS")
             print("Elapsed time: {:.2f} seconds".format(elapsed))
             print("Total nodes explored:", nodes)
             print("Frontier size at solution:", max_frontier_size)
             print("Max pegs remaining: {}".format(peg_count(node.board)))
             break
-        
-        if peg_count(node.board) == 25:
-            duration = 1000  # milliseconds
-            freq = 440  # Hz
-            winsound.Beep(freq, duration)
         
         list_moves(node.board)
         children = generate_child_boards(node)
